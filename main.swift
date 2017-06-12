@@ -8,6 +8,7 @@
 
 import Foundation
 let filePath = NSHomeDirectory() + "/students.json"
+let resultPath = NSHomeDirectory() + "/result.txt"
 var total: Double = 0
 var count: Int = 0
 var resultText: String = "성적결과표\n\n"
@@ -28,24 +29,26 @@ private func readJson() {
                 print(sortedResults)
                 for index in 0...sortedResults.count-1 {
                     var current = [Int]()
+                    var current2: Double = 0
                     let dic2 = sortedResults[index] as! [String:Any]
                     let dic3 = dic2["grade"] as! [String:Any]
                     let studentName = dic2["name"] as! String
                     for (_, value) in dic3 {
-                        total += value as! Double
+                        current2 += value as! Double
                         count += 1
                         current.append(value as! Int)
                     }
+                    total += (current2 / Double(dic3.count))
                     studentText.append("\(studentName)\t: " + judgeRank(scores: current, name: studentName) + "\n")
                 }
                 print(total)
-                let result = total / Double(count)
+                let result = total / Double(dic.count)
                 resultText.append("전체 평균 : ")
                 resultText.append(String(format: "%.2f", result) + "\n\n")
                 print(String(format: "%.2f", result))
-                resultText.append(studentText)
-                print(completion)
-                
+                resultText.append("개인별 학점\n" + studentText + "\n")
+                let stringArray = completion.joined(separator: ", ")
+                resultText.append("수료생\n\(stringArray)")
             } catch {
                 print("failed")
             }
@@ -79,3 +82,9 @@ private func judgeRank(scores: [Int], name: String) -> String {
 
 readJson()
 print(resultText)
+
+do {
+    try resultText.write(toFile: resultPath, atomically: false, encoding: String.Encoding.utf8)
+} catch let error as NSError {
+    print("file write failed!")
+}
